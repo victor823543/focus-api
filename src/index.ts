@@ -41,7 +41,7 @@ mongodb
   });
 
 server.listen(PORT, async () => {
-  console.log(`Listening on http://localhost:${PORT}/`);
+  console.log(`Listening on port: ${PORT}`);
 });
 
 export default server;
