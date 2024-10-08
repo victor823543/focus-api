@@ -25,6 +25,6 @@ jobs:
       - name: Pull image from Docker Hub
         run: docker pull victor823543/focus-api:latest
       - name: Delete old container
-        run: docker-rm -f nodejs-app-container
+        run: docker rm -f nodejs-app-container
       - name: Run Docker Container
         run: docker run -d -p 4000:4000 --name nodejs-app-container -e MONGO_URI="mongodb+srv://victor:${{ secrets.MONGO_PASSWORD }}@focuscluster0.tr9g7.mongodb.net/?retryWrites=true&w=majority&appName=FocusCluster0" -e ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN }} -e PORT=${{ secrets.PORT }} -e API_ADDRESS=${{ secrets.API_ADDRESS }} victor823543/focus-api
