@@ -24,15 +24,15 @@ const port = 4000;
 server.use(cors({ origin: "*" }));
 server.use(bodyParser.json());
 
-server.use("/users", userRoutes);
-server.use("/sessions", sessionRoutes);
-server.use("/categories", categoryRoutes);
-server.use("/colors", colorRoutes);
-server.use("/days", dayRoutes);
+server.use("/api/users", userRoutes);
+server.use("/api/sessions", sessionRoutes);
+server.use("/api/categories", categoryRoutes);
+server.use("/api/colors", colorRoutes);
+server.use("/api/days", dayRoutes);
 
 server.use(errorHandler);
 
-server.use("/health", (req, res) => {
+server.use("/api/health", (req, res) => {
   res.status(200).send("OK");
 });
 
