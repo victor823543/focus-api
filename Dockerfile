@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Use node image for base image for all stages.
-FROM node:lts-alpine as base
+FROM --platform=linux/amd64 node:lts-alpine as base
 
 # Set working directory for all build stages.
 WORKDIR /usr/src/app
