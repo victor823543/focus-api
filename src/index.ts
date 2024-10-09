@@ -2,7 +2,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
 import mongodb from "mongoose";
-import { API_ADDRESS, MONGO_URI } from "./config.js";
+import { MONGO_URI } from "./config.js";
 import { errorHandler } from "./handlers/errorHandler.js";
 
 import "./models/Category.js";
@@ -32,8 +32,9 @@ server.use("/days", dayRoutes);
 
 server.use(errorHandler);
 
-console.log(MONGO_URI);
-console.log(API_ADDRESS);
+server.use("/health", (req, res) => {
+  res.status(200).send("OK");
+});
 
 mongodb
   .connect(`${MONGO_URI}`)
