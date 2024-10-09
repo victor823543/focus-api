@@ -2,7 +2,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
 import mongodb from "mongoose";
-import { MONGO_URI, PORT } from "./config.js";
+import { MONGO_URI } from "./config.js";
 import { errorHandler } from "./handlers/errorHandler.js";
 
 import "./models/Category.js";
@@ -18,6 +18,8 @@ import sessionRoutes from "./routes/sessions.js";
 import userRoutes from "./routes/users.js";
 
 const server = express();
+
+const port = 4000;
 
 server.use(cors({ origin: "*" }));
 server.use(bodyParser.json());
@@ -40,8 +42,8 @@ mongodb
     process.exit(1);
   });
 
-server.listen(PORT, async () => {
-  console.log(`Listening on port: ${PORT}`);
+server.listen(port, async () => {
+  console.log(`Listening on port: ${port}`);
 });
 
 export default server;
