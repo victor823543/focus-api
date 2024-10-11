@@ -1,6 +1,13 @@
-// import dotenv from "dotenv";
-
-// dotenv.config();
+if (process.env.NODE_ENV !== "production") {
+  // Dynamically import dotenv in development mode
+  import("dotenv")
+    .then((dotenv) => {
+      dotenv.config();
+    })
+    .catch((err) => {
+      console.error("Error loading dotenv:", err);
+    });
+}
 
 export const API_ADDRESS = process.env.API_ADDRESS || "";
 export const PORT = parseInt(process.env.PORT || "4000");
