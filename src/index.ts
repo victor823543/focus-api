@@ -11,6 +11,7 @@ import "./models/Day.js";
 import "./models/Session.js";
 import "./models/User.js";
 
+import authRoutes from "./routes/auth.js";
 import categoryRoutes from "./routes/categories.js";
 import colorRoutes from "./routes/colors.js";
 import dayRoutes from "./routes/days.js";
@@ -29,6 +30,7 @@ server.use("/api/sessions", sessionRoutes);
 server.use("/api/categories", categoryRoutes);
 server.use("/api/colors", colorRoutes);
 server.use("/api/days", dayRoutes);
+server.use("/api/auth", authRoutes);
 
 server.use(errorHandler);
 
