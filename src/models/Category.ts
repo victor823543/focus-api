@@ -2,7 +2,7 @@ import { Schema, Types, model } from "mongoose";
 
 export type ICategory = {
   _id: Types.ObjectId;
-  user: Types.ObjectId;
+  user?: Types.ObjectId;
   name: string;
   importance: number;
   color: { name: string; hex: string };
@@ -12,7 +12,7 @@ export type ICategory = {
 const schema = new Schema<ICategory>({
   user: {
     type: Schema.Types.ObjectId,
-    required: true,
+    required: false,
     ref: "User",
   },
   name: {
