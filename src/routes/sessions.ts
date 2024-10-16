@@ -8,6 +8,11 @@ const router = express.Router();
 router.get("/", authorization, asyncHandler(sessionController.list));
 router.get("/:id", authorization, asyncHandler(sessionController.get));
 router.post("/create", authorization, asyncHandler(sessionController.create));
+router.post(
+  "/configure",
+  authorization,
+  asyncHandler(sessionController.configure),
+);
 router.delete("/:id", authorization, asyncHandler(sessionController.remove));
 router.put(
   "/update/:id",

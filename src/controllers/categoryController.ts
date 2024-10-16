@@ -8,7 +8,7 @@ import { ErrorResponse, sendValidResponse } from "../utils/sendResponse.js";
 
 type CategoryType = Politus<ICategory>;
 
-type CreateCategoryParams = {
+export type CreateCategoryParams = {
   name: string;
   importance: string;
   color: { name: string; hex: string };
@@ -25,6 +25,23 @@ async function list(req: Request, res: Response) {
 
   const result: Array<ICategory> = await Category.find({
     user: user._id,
+  }).lean();
+
+  const categories: Array<CategoryType> = result.map((category) => ({
+    ...category,
+    id: category._id.toString(),
+  }));
+
+  return sendValidResponse<Array<CategoryType>>(
+    res,
+    SuccessCode.OK,
+    categories,
+  );
+}
+
+async function listGlobal(req: Request, res: Response) {
+  const result: Array<ICategory> = await Category.find({
+    user: undefined,
   }).lean();
 
   const categories: Array<CategoryType> = result.map((category) => ({
@@ -117,4 +134,4 @@ async function update(req: Request, res: Response) {
   }
 }
 
-export default { create, remove, list, update };
+export default { create, remove, list, update, listGlobal };
