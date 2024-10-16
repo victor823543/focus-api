@@ -8,7 +8,7 @@ import { ErrorResponse, sendValidResponse } from "../utils/sendResponse.js";
 
 type CategoryType = Politus<ICategory>;
 
-type CreateCategoryParams = {
+export type CreateCategoryParams = {
   name: string;
   importance: string;
   color: { name: string; hex: string };

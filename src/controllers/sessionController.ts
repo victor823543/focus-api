@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
 import { Types } from "mongoose";
-import { ICategory } from "../models/Category.js";
+import { Category, ICategory } from "../models/Category.js";
 import { Day, IDay } from "../models/Day.js";
 import { ISession, Session } from "../models/Session.js";
 import { TokenPayload } from "../models/User";
 import { Politus } from "../types.js";
 import { ErrorCode, SuccessCode } from "../utils/constants.js";
 import { ErrorResponse, sendValidResponse } from "../utils/sendResponse.js";
+import { CreateCategoryParams } from "./categoryController.js";
 
 type SessionType = Politus<ISession>;
 type CategoryType = Politus<ICategory>;
@@ -37,6 +38,14 @@ type SessionUpdateParams = Partial<{
   end: string | null;
   activeDays: Array<number>;
 }>;
+
+type SessionConfigureParams = {
+  title: string;
+  categories: Array<CreateCategoryParams>;
+  start: string;
+  end?: string | null;
+  activeDays?: Array<number>;
+};
 
 const changeIdFromCategories = (categories: any[]) =>
   categories.map((category) => ({
@@ -158,6 +167,54 @@ async function create(req: Request, res: Response) {
   );
 }
 
+async function configure(req: Request, res: Response) {
+  const user: TokenPayload = res.locals.user;
+  const params: SessionConfigureParams = req.body;
+
+  const createCategory = async (
+    category: CreateCategoryParams,
+  ): Promise<string> => {
+    const createdCategory: ICategory = await Category.create({
+      user: user._id,
+      ...category,
+    });
+    return createdCategory._id.toString();
+  };
+
+  const categoryIds: string[] = await Promise.all(
+    params.categories.map(async (category) => {
+      const categoryId = await createCategory(category);
+      return categoryId;
+    }),
+  );
+
+  const result: ISession = await Session.create({
+    user: user._id,
+    ...params,
+    categories: categoryIds,
+  });
+
+  const createdSession: ISession | null = await Session.findOne({
+    _id: result._id,
+  }).lean();
+
+  if (createdSession === null) throw new Error("Session creation failed.");
+
+  const response: CreateSessionResponse = {
+    id: createdSession._id.toString(),
+    title: createdSession.title,
+    start: new Date(createdSession.start).toISOString(),
+    end: createdSession.end ? new Date(createdSession.end).toISOString() : null,
+    categories: changeIdFromCategories(createdSession.categories),
+  };
+
+  return sendValidResponse<CreateSessionResponse>(
+    res,
+    SuccessCode.OK,
+    response,
+  );
+}
+
 async function remove(req: Request, res: Response) {
   const user: TokenPayload = res.locals.user;
   const id: string = req.params.id;
@@ -229,4 +286,4 @@ async function update(req: Request, res: Response) {
   }
 }
 
-export default { create, remove, list, get, update };
+export default { create, remove, list, get, update, configure };
