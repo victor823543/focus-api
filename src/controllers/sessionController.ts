@@ -13,21 +13,16 @@ type SessionType = Politus<ISession>;
 type CategoryType = Politus<ICategory>;
 type DayType = Politus<IDay>;
 
-type ListSessionsResponse = {
-  id: string;
-  title: string;
-  start: string;
-  end: string | null;
-  categories: Array<CategoryType>;
-}[];
-
 type CreateSessionResponse = {
   id: string;
   title: string;
   start: string;
   end: string | null;
   categories: Array<CategoryType>;
+  maxScore: number;
 };
+
+type ListSessionsResponse = CreateSessionResponse[];
 
 type UpdateSessionResponse = CreateSessionResponse;
 
@@ -37,6 +32,7 @@ type SessionUpdateParams = Partial<{
   start: string;
   end: string | null;
   activeDays: Array<number>;
+  maxScore: number;
 }>;
 
 type SessionConfigureParams = {
@@ -62,13 +58,14 @@ async function list(req: Request, res: Response) {
     .populate("categories");
 
   const sessions: ListSessionsResponse = result.map(
-    ({ _id, title, start, end, categories }) => {
+    ({ _id, title, start, end, categories, maxScore }) => {
       return {
         id: _id.toString(),
         title,
         start: new Date(start).toISOString(),
         end: end ? new Date(end).toISOString() : null,
         categories: changeIdFromCategories(categories),
+        maxScore,
       };
     },
   );
@@ -158,6 +155,7 @@ async function create(req: Request, res: Response) {
     start: new Date(createdSession.start).toISOString(),
     end: createdSession.end ? new Date(createdSession.end).toISOString() : null,
     categories: changeIdFromCategories(createdSession.categories),
+    maxScore: createdSession.maxScore,
   };
 
   return sendValidResponse<CreateSessionResponse>(
@@ -188,9 +186,15 @@ async function configure(req: Request, res: Response) {
     }),
   );
 
+  const maxScore = params.categories.reduce(
+    (value, category) => (value += 10 * Number(category.importance)),
+    0,
+  );
+
   const result: ISession = await Session.create({
     user: user._id,
     ...params,
+    maxScore: maxScore,
     categories: categoryIds,
   });
 
@@ -206,6 +210,7 @@ async function configure(req: Request, res: Response) {
     start: new Date(createdSession.start).toISOString(),
     end: createdSession.end ? new Date(createdSession.end).toISOString() : null,
     categories: changeIdFromCategories(createdSession.categories),
+    maxScore: maxScore,
   };
 
   return sendValidResponse<CreateSessionResponse>(
@@ -263,6 +268,25 @@ async function update(req: Request, res: Response) {
   }
 
   try {
+    let maxScore: number = 0;
+
+    // If categories are included in params, calculate maxScore
+    if (params.categories && params.categories.length > 0) {
+      // Fetch the categories from the database
+      const categories = await Category.find({
+        _id: { $in: params.categories },
+      });
+
+      // Calculate maxScore based on the importance of the fetched categories
+      maxScore = categories.reduce(
+        (value, category) => (value += 10 * Number(category.importance)),
+        0,
+      );
+
+      // Include the calculated maxScore in params for the update
+      params.maxScore = maxScore;
+    }
+
     await Session.updateOne({ _id: id }, { $set: params });
 
     const result = await Session.findById(id).lean().populate("categories");
@@ -274,6 +298,7 @@ async function update(req: Request, res: Response) {
       start: new Date(result.start).toISOString(),
       end: result.end ? new Date(result.end).toISOString() : null,
       categories: changeIdFromCategories(result.categories),
+      maxScore: maxScore,
     };
 
     return sendValidResponse<UpdateSessionResponse>(
