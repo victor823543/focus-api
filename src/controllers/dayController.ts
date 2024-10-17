@@ -157,13 +157,10 @@ async function create(req: Request, res: Response) {
     throw new ErrorResponse(ErrorCode.NO_RESULT, "Session not found.");
   }
 
-  console.log("Params:", params);
-  console.log("SessionCategories:", findSession.categories);
-
   const categoryScore: CategoryScore[] = findSession.categories.map(
     (category: any) => {
       const score = params.categories.find(
-        (paramCategory) => paramCategory.category === category._id.toString(),
+        (paramCategory) => paramCategory.category === category.name.toString(),
       )?.score;
       const categoryScoreObject = {
         category: category._id.toString(),
@@ -184,8 +181,6 @@ async function create(req: Request, res: Response) {
     (value, category) => value + category.calculatedScore,
     0,
   );
-
-  console.log("CategoryScore:", categoryScore);
 
   await Day.create({
     user: user._id,
@@ -223,8 +218,6 @@ async function update(req: Request, res: Response) {
     params,
     findDay.maxScore,
   );
-
-  console.log(valuesToUpdate);
 
   try {
     const updated = await Day.updateOne(
