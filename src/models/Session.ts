@@ -7,6 +7,7 @@ export type ISession = {
   categories: Array<Types.ObjectId>;
   data: Array<Types.ObjectId>;
   activeDays: Array<number>;
+  maxScore: number;
   start: Date;
   end: Date | null;
   timestamp: number;
@@ -34,6 +35,11 @@ const schema = new Schema<ISession>({
     required: true,
     ref: "Day",
     default: [],
+  },
+  maxScore: {
+    type: Number,
+    required: true,
+    default: 0,
   },
   activeDays: {
     type: [Number],
