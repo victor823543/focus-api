@@ -15,6 +15,16 @@ type LoginResponse = {
   token: string;
 };
 
+type UpdateUserResponse = Partial<{
+  username: string;
+  password: string;
+}>;
+
+type UpdateUserParams = Partial<{
+  username: string;
+  password_hash: string;
+}>;
+
 async function validateToken(req: Request, res: Response) {
   const authorizationHeader = req.headers.authorization;
   const token =
@@ -156,4 +166,70 @@ async function signup(req: Request, res: Response) {
   }
 }
 
-export default { validateToken, signNewToken, login, signup };
+async function update(req: Request, res: Response) {
+  const user: TokenPayload = res.locals.user;
+  const params: UpdateUserResponse = req.body;
+
+  try {
+    let updatedFields: UpdateUserParams = { username: params.username };
+
+    if (params.password) {
+      const password_hash = crypto
+        .createHash("sha256")
+        .update(params.password)
+        .digest("hex");
+
+      updatedFields.password_hash = password_hash;
+    }
+
+    await User.updateOne({ _id: user._id }, { $set: updatedFields });
+
+    const payload = {
+      _id: user._id.toString(),
+      email: user.email,
+      username: params.username || user.username,
+    };
+
+    const token = jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: "12h" });
+
+    return sendValidResponse<LoginResponse>(res, SuccessCode.OK, {
+      token,
+    });
+  } catch (error) {
+    throw new ErrorResponse(ErrorCode.SERVER_ERROR, "Something went wrong.");
+  }
+}
+
+async function remove(req: Request, res: Response) {
+  const user: TokenPayload = res.locals.user;
+
+  // Look for the user in the database by id
+  const findUser = await User.findOne({
+    _id: user._id,
+  });
+
+  // If no result, return an error
+  if (findUser === null) {
+    throw new ErrorResponse(
+      ErrorCode.NO_RESULT,
+      "Couldn't find a user with that Id.",
+    );
+  }
+
+  try {
+    const result = await User.deleteOne({ _id: user._id });
+
+    if (result.deletedCount === 0) {
+      throw new Error();
+    }
+
+    return sendValidResponse(res, SuccessCode.NO_CONTENT);
+  } catch (err) {
+    throw new ErrorResponse(
+      ErrorCode.SERVER_ERROR,
+      "Something went wrong when removing the session.",
+    );
+  }
+}
+
+export default { validateToken, signNewToken, login, signup, update, remove };
