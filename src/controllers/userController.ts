@@ -200,4 +200,36 @@ async function update(req: Request, res: Response) {
   }
 }
 
-export default { validateToken, signNewToken, login, signup, update };
+async function remove(req: Request, res: Response) {
+  const user: TokenPayload = res.locals.user;
+
+  // Look for the user in the database by id
+  const findUser = await User.findOne({
+    _id: user._id,
+  });
+
+  // If no result, return an error
+  if (findUser === null) {
+    throw new ErrorResponse(
+      ErrorCode.NO_RESULT,
+      "Couldn't find a user with that Id.",
+    );
+  }
+
+  try {
+    const result = await User.deleteOne({ _id: user._id });
+
+    if (result.deletedCount === 0) {
+      throw new Error();
+    }
+
+    return sendValidResponse(res, SuccessCode.NO_CONTENT);
+  } catch (err) {
+    throw new ErrorResponse(
+      ErrorCode.SERVER_ERROR,
+      "Something went wrong when removing the session.",
+    );
+  }
+}
+
+export default { validateToken, signNewToken, login, signup, update, remove };
