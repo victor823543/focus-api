@@ -15,6 +15,16 @@ type LoginResponse = {
   token: string;
 };
 
+type UpdateUserResponse = Partial<{
+  username: string;
+  password: string;
+}>;
+
+type UpdateUserParams = Partial<{
+  username: string;
+  password_hash: string;
+}>;
+
 async function validateToken(req: Request, res: Response) {
   const authorizationHeader = req.headers.authorization;
   const token =
@@ -156,4 +166,38 @@ async function signup(req: Request, res: Response) {
   }
 }
 
-export default { validateToken, signNewToken, login, signup };
+async function update(req: Request, res: Response) {
+  const user: TokenPayload = res.locals.user;
+  const params: UpdateUserResponse = req.body;
+
+  try {
+    let updatedFields: UpdateUserParams = { username: params.username };
+
+    if (params.password) {
+      const password_hash = crypto
+        .createHash("sha256")
+        .update(params.password)
+        .digest("hex");
+
+      updatedFields.password_hash = password_hash;
+    }
+
+    await User.updateOne({ _id: user._id }, { $set: updatedFields });
+
+    const payload = {
+      _id: user._id.toString(),
+      email: user.email,
+      username: params.username || user.username,
+    };
+
+    const token = jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: "12h" });
+
+    return sendValidResponse<LoginResponse>(res, SuccessCode.OK, {
+      token,
+    });
+  } catch (error) {
+    throw new ErrorResponse(ErrorCode.SERVER_ERROR, "Something went wrong.");
+  }
+}
+
+export default { validateToken, signNewToken, login, signup, update };

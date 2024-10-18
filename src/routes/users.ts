@@ -13,5 +13,6 @@ router.post(
 );
 router.post("/login", asyncHandler(userController.login));
 router.post("/signup", asyncHandler(userController.signup));
+router.put("/update", authorization, asyncHandler(userController.update));
 
 export default router;
