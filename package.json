@@ -5,8 +5,10 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "watch": "NODE_ENV=development npm run build && node ./dist/index.js",
+    "watch": "NODE_ENV=development npm run build && NODE_ENV=development node ./dist/index.js",
     "dev": "./node_modules/nodemon/bin/nodemon.js -e ts  --exec \"npm run watch\"",
+    "watch-test": "NODE_ENV=devtest npm run build && NODE_ENV=devtest node ./dist/index.js",
+    "devtest": "./node_modules/nodemon/bin/nodemon.js -e ts  --exec \"npm run watch-test\"",
     "start": "NODE_ENV=production node ./dist/index.js",
     "format": "npx prettier 'src/**/*.{js,ts,mjs,cjs,json,jsx,tsx}' --write"
   },
