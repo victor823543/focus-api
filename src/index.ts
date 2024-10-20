@@ -16,6 +16,7 @@ import categoryRoutes from "./routes/categories.js";
 import colorRoutes from "./routes/colors.js";
 import dayRoutes from "./routes/days.js";
 import sessionRoutes from "./routes/sessions.js";
+import testRoutes from "./routes/test.js";
 import userRoutes from "./routes/users.js";
 
 const server = express();
@@ -31,6 +32,7 @@ server.use("/api/categories", categoryRoutes);
 server.use("/api/colors", colorRoutes);
 server.use("/api/days", dayRoutes);
 server.use("/api/auth", authRoutes);
+server.use("/api/test", testRoutes);
 
 server.use(errorHandler);
 
