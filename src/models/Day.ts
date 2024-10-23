@@ -20,6 +20,7 @@ export type IDay = {
   user: Types.ObjectId;
   session: Types.ObjectId;
   date: Date;
+  categories: Array<Types.ObjectId>;
   score: Array<CategoryScore>;
   totalScore: number;
   maxScore: number;
@@ -43,7 +44,12 @@ const DaySchema = new Schema<IDay>({
     required: true,
     default: Date.now,
   },
-
+  categories: {
+    type: [Schema.Types.ObjectId],
+    required: true,
+    ref: "Category",
+    default: [],
+  },
   score: {
     type: [CategoryScoreSchema],
     required: true,
