@@ -232,16 +232,29 @@ async function remove(req: Request, res: Response) {
   const user: TokenPayload = res.locals.user;
   const id: string = req.params.id;
 
-  const session = Session.find({ _id: id, user: user._id });
+  const session = Session.findOne({ _id: id, user: user._id });
 
   if (session === null) {
     throw new ErrorResponse(ErrorCode.NO_RESULT, "Session not found.");
   }
 
   try {
-    const result = await Session.deleteOne({ _id: id });
+    // Find and delete all categories related to this session
+    const categoryDeletionResult = await Category.deleteMany({ session: id });
+    console.log(
+      `${categoryDeletionResult.deletedCount} categories were deleted for session ${id}.`,
+    );
 
-    if (result.deletedCount === 0) {
+    // Find and delete all days related to this session
+    const dayDeletionResult = await Day.deleteMany({ session: id });
+    console.log(
+      `${dayDeletionResult.deletedCount} days were deleted for session ${id}.`,
+    );
+
+    // Delete the session itself
+    const sessionDeletionResult = await Session.deleteOne({ _id: id });
+
+    if (sessionDeletionResult.deletedCount === 0) {
       throw new Error();
     }
 
