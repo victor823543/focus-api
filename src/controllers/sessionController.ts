@@ -43,7 +43,7 @@ type SessionConfigureParams = {
   activeDays?: Array<number>;
 };
 
-const changeIdFromCategories = (categories: any[]) =>
+export const changeIdFromCategories = (categories: any[]) =>
   categories.map((category) => ({
     ...category,
     id: category._id.toString(),
@@ -54,8 +54,8 @@ async function list(req: Request, res: Response) {
   const user: TokenPayload = res.locals.user;
 
   const result: Array<ISession> = await Session.find({ user: user._id })
-    .lean()
-    .populate("categories");
+    .populate("categories")
+    .lean();
 
   const sessions: ListSessionsResponse = result.map(
     ({ _id, title, start, end, categories, maxScore }) => {
@@ -145,8 +145,8 @@ async function create(req: Request, res: Response) {
   const createdSession: ISession | null = await Session.findOne({
     session: result._id,
   })
-    .lean()
-    .populate("categories");
+    .populate("categories")
+    .lean();
   if (createdSession === null) throw new Error();
 
   const response: CreateSessionResponse = {
@@ -200,7 +200,9 @@ async function configure(req: Request, res: Response) {
 
   const createdSession: ISession | null = await Session.findOne({
     _id: result._id,
-  }).lean();
+  })
+    .populate("categories")
+    .lean();
 
   if (createdSession === null) throw new Error("Session creation failed.");
 
@@ -289,7 +291,7 @@ async function update(req: Request, res: Response) {
 
     await Session.updateOne({ _id: id }, { $set: params });
 
-    const result = await Session.findById(id).lean().populate("categories");
+    const result = await Session.findById(id).populate("categories").lean();
     if (result === null) throw new Error();
 
     const session: UpdateSessionResponse = {

@@ -6,6 +6,7 @@ import { TokenPayload } from "../models/User.js";
 import { Politus } from "../types.js";
 import { ErrorCode, SuccessCode } from "../utils/constants.js";
 import { ErrorResponse, sendValidResponse } from "../utils/sendResponse.js";
+import { changeIdFromCategories } from "./sessionController.js";
 
 type DayType = Politus<IDay>;
 
@@ -105,13 +106,16 @@ async function list(req: Request, res: Response) {
     user: user._id,
     session: sessionId,
     date: { $gte: startOfMonth, $lte: endOfMonth },
-  }).lean();
+  })
+    .populate("categories")
+    .lean();
 
   // Convert the result to an object where the key is the date and the value is the day item
   const days = result.reduce<Record<string, DayType>>((acc, day) => {
     acc[day.date.toString()] = {
       ...day,
       id: day._id.toString(),
+      categories: changeIdFromCategories(day.categories),
     };
     return acc;
   }, {});
@@ -127,13 +131,16 @@ async function all(req: Request, res: Response) {
   const result: Array<IDay> = await Day.find({
     user: user._id,
     session: sessionId,
-  }).lean();
+  })
+    .populate("categories")
+    .lean();
 
   // Convert the result to an object where the key is the date and the value is the day item
   const days = result.reduce<Record<string, DayType>>((acc, day) => {
     acc[day.date.toISOString()] = {
       ...day,
       id: day._id.toString(),
+      categories: changeIdFromCategories(day.categories),
     };
     return acc;
   }, {});
@@ -150,8 +157,8 @@ async function create(req: Request, res: Response) {
     _id: params.session,
     user: user._id,
   })
-    .lean()
-    .populate("categories");
+    .populate("categories")
+    .lean();
 
   if (findSession === null) {
     throw new ErrorResponse(ErrorCode.NO_RESULT, "Session not found.");
@@ -186,6 +193,7 @@ async function create(req: Request, res: Response) {
     user: user._id,
     session: findSession._id,
     date: params.date,
+    categories: findSession.categories.map((category) => category._id),
     score: categoryScore,
     maxScore,
     totalScore,
