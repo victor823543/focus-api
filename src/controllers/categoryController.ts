@@ -21,6 +21,27 @@ type CreateCategoryResponse = {
 
 type CategoryUpdateParams = Partial<CreateCategoryParams>;
 
+async function get(req: Request, res: Response) {
+  const user: TokenPayload = res.locals.user;
+  const id: string = req.params.id;
+
+  const result: ICategory | null = await Category.findOne({
+    user: user._id,
+    _id: id,
+  }).lean();
+
+  if (result === null) {
+    throw new ErrorResponse(ErrorCode.NO_RESULT, "Category not found.");
+  }
+
+  const category: CategoryType = {
+    ...result,
+    id: result._id.toString(),
+  };
+
+  return sendValidResponse<CategoryType>(res, SuccessCode.OK, category);
+}
+
 async function list(req: Request, res: Response) {
   const user: TokenPayload = res.locals.user;
   const sessionId: string = req.params.sessionId;
@@ -157,4 +178,4 @@ async function update(req: Request, res: Response) {
   }
 }
 
-export default { create, remove, list, update, listGlobal, all };
+export default { create, remove, list, update, listGlobal, all, get };
