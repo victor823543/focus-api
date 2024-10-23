@@ -8,7 +8,7 @@ import { ErrorCode, SuccessCode } from "../utils/constants.js";
 import { ErrorResponse, sendValidResponse } from "../utils/sendResponse.js";
 import { changeIdFromCategories } from "./sessionController.js";
 
-type DayType = Politus<IDay>;
+export type DayType = Politus<IDay>;
 
 type CreateDayParams = {
   session: string;
