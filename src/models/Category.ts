@@ -3,6 +3,7 @@ import { Schema, Types, model } from "mongoose";
 export type ICategory = {
   _id: Types.ObjectId;
   user?: Types.ObjectId;
+  session?: Types.ObjectId;
   name: string;
   importance: number;
   color: { name: string; hex: string };
@@ -14,6 +15,11 @@ const schema = new Schema<ICategory>({
     type: Schema.Types.ObjectId,
     required: false,
     ref: "User",
+  },
+  session: {
+    type: Schema.Types.ObjectId,
+    required: false,
+    ref: "Session",
   },
   name: {
     type: String,

@@ -5,7 +5,12 @@ import authorization from "../middleware/authorization.js";
 
 const router = express.Router();
 
-router.get("/", authorization, asyncHandler(categoryController.list));
+router.get(
+  "/list/:sessionId",
+  authorization,
+  asyncHandler(categoryController.list),
+);
+router.get("/all", authorization, asyncHandler(categoryController.all));
 router.get("/global", asyncHandler(categoryController.listGlobal));
 router.post("/create", authorization, asyncHandler(categoryController.create));
 router.delete("/:id", authorization, asyncHandler(categoryController.remove));
