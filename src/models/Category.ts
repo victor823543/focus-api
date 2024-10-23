@@ -6,7 +6,7 @@ export type ICategory = {
   session?: Types.ObjectId;
   name: string;
   importance: number;
-  color: { name: string; hex: string };
+  color: { name: string; main: string; light: string; dark: string };
   timestamp: number;
 };
 
@@ -31,7 +31,7 @@ const schema = new Schema<ICategory>({
     default: () => 1,
   },
   color: {
-    type: { name: String, hex: String },
+    type: { name: String, main: String, light: String, dark: String },
     required: true,
     default: { name: "Gray", hex: "#9ca3af" },
   },

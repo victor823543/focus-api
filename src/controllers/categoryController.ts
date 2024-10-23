@@ -12,7 +12,7 @@ export type CreateCategoryParams = {
   session: string;
   name: string;
   importance: string;
-  color: { name: string; hex: string };
+  color: { name: string; main: string; light: string; dark: string };
 };
 
 type CreateCategoryResponse = {
