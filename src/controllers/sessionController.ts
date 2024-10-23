@@ -169,12 +169,20 @@ async function configure(req: Request, res: Response) {
   const user: TokenPayload = res.locals.user;
   const params: SessionConfigureParams = req.body;
 
+  const sessionResult: ISession = await Session.create({
+    user: user._id,
+    ...params,
+    maxScore: 0,
+    categories: [],
+  });
+
   const createCategory = async (
     category: CreateCategoryParams,
   ): Promise<string> => {
     const createdCategory: ICategory = await Category.create({
       user: user._id,
       ...category,
+      session: sessionResult._id,
     });
     return createdCategory._id.toString();
   };
@@ -191,27 +199,25 @@ async function configure(req: Request, res: Response) {
     0,
   );
 
-  const result: ISession = await Session.create({
-    user: user._id,
-    ...params,
-    maxScore: maxScore,
-    categories: categoryIds,
-  });
-
-  const createdSession: ISession | null = await Session.findOne({
-    _id: result._id,
-  })
+  const updatedSession: ISession | null = await Session.findByIdAndUpdate(
+    sessionResult._id,
+    {
+      categories: categoryIds,
+      maxScore: maxScore,
+    },
+    { new: true },
+  )
     .populate("categories")
     .lean();
 
-  if (createdSession === null) throw new Error("Session creation failed.");
+  if (updatedSession === null) throw new Error("Session update failed.");
 
   const response: CreateSessionResponse = {
-    id: createdSession._id.toString(),
-    title: createdSession.title,
-    start: new Date(createdSession.start).toISOString(),
-    end: createdSession.end ? new Date(createdSession.end).toISOString() : null,
-    categories: changeIdFromCategories(createdSession.categories),
+    id: updatedSession._id.toString(),
+    title: updatedSession.title,
+    start: new Date(updatedSession.start).toISOString(),
+    end: updatedSession.end ? new Date(updatedSession.end).toISOString() : null,
+    categories: changeIdFromCategories(updatedSession.categories),
     maxScore: maxScore,
   };
 
@@ -226,16 +232,29 @@ async function remove(req: Request, res: Response) {
   const user: TokenPayload = res.locals.user;
   const id: string = req.params.id;
 
-  const session = Session.find({ _id: id, user: user._id });
+  const session = Session.findOne({ _id: id, user: user._id });
 
   if (session === null) {
     throw new ErrorResponse(ErrorCode.NO_RESULT, "Session not found.");
   }
 
   try {
-    const result = await Session.deleteOne({ _id: id });
+    // Find and delete all categories related to this session
+    const categoryDeletionResult = await Category.deleteMany({ session: id });
+    console.log(
+      `${categoryDeletionResult.deletedCount} categories were deleted for session ${id}.`,
+    );
 
-    if (result.deletedCount === 0) {
+    // Find and delete all days related to this session
+    const dayDeletionResult = await Day.deleteMany({ session: id });
+    console.log(
+      `${dayDeletionResult.deletedCount} days were deleted for session ${id}.`,
+    );
+
+    // Delete the session itself
+    const sessionDeletionResult = await Session.deleteOne({ _id: id });
+
+    if (sessionDeletionResult.deletedCount === 0) {
       throw new Error();
     }
 

@@ -2,6 +2,9 @@ import crypto from "crypto";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { ACCESS_TOKEN_SECRET } from "../config.js";
+import { Category } from "../models/Category.js";
+import { Day } from "../models/Day.js";
+import { Session } from "../models/Session.js";
 import { TokenPayload, User } from "../models/User.js";
 import { Indef } from "../types.js";
 import { ErrorCode, SuccessCode } from "../utils/constants.js";
@@ -217,6 +220,24 @@ async function remove(req: Request, res: Response) {
   }
 
   try {
+    // Delete all sessions associated with the user
+    const sessionDeletionResult = await Session.deleteMany({ user: user._id });
+    console.log(sessionDeletionResult.deletedCount, "sessions were deleted.");
+
+    // Delete all days associated with the user
+    const dayDeletionResult = await Day.deleteMany({ user: user._id });
+    console.log(dayDeletionResult.deletedCount, "days were deleted.");
+
+    // Delete all categories associated with the user
+    const categoryDeletionResult = await Category.deleteMany({
+      user: user._id,
+    });
+    console.log(
+      categoryDeletionResult.deletedCount,
+      "categories were deleted.",
+    );
+
+    // Delete the user itself
     const result = await User.deleteOne({ _id: user._id });
 
     if (result.deletedCount === 0) {
