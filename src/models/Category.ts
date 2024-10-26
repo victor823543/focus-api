@@ -7,6 +7,7 @@ export type ICategory = {
   name: string;
   importance: number;
   color: { name: string; main: string; light: string; dark: string };
+  description?: string;
   timestamp: number;
 };
 
@@ -29,6 +30,11 @@ const schema = new Schema<ICategory>({
     type: Number,
     required: true,
     default: () => 1,
+  },
+  description: {
+    type: String,
+    required: false,
+    default: "",
   },
   color: {
     type: { name: String, main: String, light: String, dark: String },

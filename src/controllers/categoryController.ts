@@ -31,7 +31,10 @@ type GetCategoryResponse = {
   dateStats: CategoryPeriodDateStats;
 };
 
-type CategoryUpdateParams = Partial<CreateCategoryParams>;
+type CategoryUpdateParams = Partial<{
+  color: { name: string; main: string; light: string; dark: string };
+  description: string;
+}>;
 
 type CategoryDateStats = Record<
   string,
@@ -252,6 +255,18 @@ async function update(req: Request, res: Response) {
     );
   }
 
+  const updatedValues: Partial<ICategory> = {};
+
+  if (params.color) updatedValues.color = params.color;
+  if (params.description) updatedValues.description = params.description;
+
+  if (Object.keys(updatedValues).length === 0) {
+    throw new ErrorResponse(
+      ErrorCode.BAD_REQUEST,
+      "No valid update values provided.",
+    );
+  }
+
   const findCategory: ICategory | null = await Category.findOne({
     _id: id,
     user: user._id,
@@ -262,7 +277,7 @@ async function update(req: Request, res: Response) {
   }
 
   try {
-    await Category.updateOne({ _id: id }, { $set: params });
+    await Category.updateOne({ _id: id }, { $set: updatedValues });
 
     return sendValidResponse(res, SuccessCode.NO_CONTENT);
   } catch (error) {
