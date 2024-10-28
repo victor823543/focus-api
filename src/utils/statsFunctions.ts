@@ -78,39 +78,45 @@ export const getDayHorizontalBarChartData = (
 
 export const getDayComparisonInfo = (
   days: DayR[],
-  day: DayR,
-): { dayComparisonInfo: DayComparisonInfo; sessionInfo: SessionInfo } => {
+  day?: DayR,
+): { dayComparisonInfo?: DayComparisonInfo; sessionInfo: SessionInfo } => {
   // Get the top percentage in which the day falls
   const sortedDays = [...days].sort(
     (a, b) => b.percentageScore - a.percentageScore,
   );
-  const index = sortedDays.findIndex((d) => d.id === day.id);
-  const topPercentage = (index / sortedDays.length) * 100;
 
-  // Get shortage or surplus of the day compared to the average
-  const avgScore = days.reduce((acc, d) => acc + d.totalScore, 0) / days.length;
-  const distanceFromAverage = day.totalScore - avgScore;
+  let dayComparisonInfo: DayComparisonInfo | undefined = undefined;
 
-  // Get the day's rank
-  const rank = index + 1;
+  if (!!day) {
+    const index = sortedDays.findIndex((d) => d.id === day.id);
+    const topPercentage = (index / sortedDays.length) * 100;
 
-  // Get the distance from best day
-  const bestDay = sortedDays[0];
-  const distanceFromBest = day.percentageScore - bestDay.percentageScore;
+    // Get shortage or surplus of the day compared to the average
+    const avgScore =
+      days.reduce((acc, d) => acc + d.totalScore, 0) / days.length;
+    const distanceFromAverage = day.totalScore - avgScore;
 
-  // Get the score distance from best day
-  const scoreDistanceFromBest = day.totalScore - bestDay.totalScore;
+    // Get the day's rank
+    const rank = index + 1;
 
-  const dayComparisonInfo: DayComparisonInfo = {
-    topPercentage,
-    distanceFromAverage,
-    rank,
-    distanceFromBest,
-    scoreDistanceFromBest,
-  };
+    // Get the distance from best day
+    const bestDay = sortedDays[0];
+    const distanceFromBest = day.percentageScore - bestDay.percentageScore;
+
+    // Get the score distance from best day
+    const scoreDistanceFromBest = day.totalScore - bestDay.totalScore;
+
+    dayComparisonInfo = {
+      topPercentage,
+      distanceFromAverage,
+      rank,
+      distanceFromBest,
+      scoreDistanceFromBest,
+    };
+  }
 
   const sessionInfo: SessionInfo = {
-    bestDay,
+    bestDay: sortedDays[0],
     worstDay: sortedDays[sortedDays.length - 1],
     totalDays: days.length,
     totalScore: days.reduce((acc, d) => acc + d.totalScore, 0),

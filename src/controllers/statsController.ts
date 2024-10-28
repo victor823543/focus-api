@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
 import { CategoryScore, Day, IDay } from "../models/Day.js";
 import { TokenPayload } from "../models/User.js";
-import { ErrorCode } from "../utils/constants.js";
 import { toYMD } from "../utils/dateFunctions.js";
-import { ErrorResponse, sendValidResponse } from "../utils/sendResponse.js";
+import { sendValidResponse } from "../utils/sendResponse.js";
 import {
   getCategoryAverage,
   getCategoryDateObject,
@@ -15,11 +14,12 @@ import { CategoryDateStats, CategoryType } from "./categoryController.js";
 import { changeIdFromCategories } from "./sessionController.js";
 
 type DayStatsResponse = {
-  day: DayR;
-  dayComparisonInfo: DayComparisonInfo;
-  dayHorizontalBarChartData: DayHorizontalBarChartData;
+  status: "exists" | "not_exists";
+  day?: DayR;
+  dayComparisonInfo?: DayComparisonInfo;
+  dayHorizontalBarChartData?: DayHorizontalBarChartData;
   sessionInfo: SessionInfo;
-  dayTrendChartData: DayTrendChartData;
+  dayTrendChartData?: DayTrendChartData;
 };
 
 export type DayTrendChartData = Array<{
@@ -96,8 +96,6 @@ async function getDayStats(req: Request, res: Response) {
     fiveLastDates.push(newDate);
   }
 
-  console.log(date);
-
   const dayResult: Array<IDay> = await Day.find({
     user: user._id,
     session: sessionId,
@@ -124,7 +122,12 @@ async function getDayStats(req: Request, res: Response) {
   );
 
   if (!day) {
-    throw new ErrorResponse(ErrorCode.NO_RESULT, "Day not found.");
+    const { sessionInfo } = getDayComparisonInfo(allDays);
+    const response: DayStatsResponse = {
+      status: "not_exists",
+      sessionInfo,
+    };
+    return sendValidResponse<DayStatsResponse>(res, 200, response);
   }
 
   const categories: CategoryType[] = day.categories;
@@ -157,6 +160,7 @@ async function getDayStats(req: Request, res: Response) {
   );
 
   const response: DayStatsResponse = {
+    status: "exists",
     day,
     dayComparisonInfo,
     dayHorizontalBarChartData,
