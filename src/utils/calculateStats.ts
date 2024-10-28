@@ -1,4 +1,5 @@
 import { isSameMonth, isSameWeek } from "date-fns";
+import { sortObjectByDateKeys } from "./dateFunctions.js";
 
 type CategoryDateStats = Record<
   string,
@@ -102,8 +103,8 @@ export const calculateCategoryStats = (
 
   const dateStats: CategoryPeriodDateStats = {
     allTime: categoryDateStats,
-    thisWeek: categoryDateWeekStats,
-    thisMonth: categoryDateMonthStats,
+    thisWeek: sortObjectByDateKeys(categoryDateWeekStats),
+    thisMonth: sortObjectByDateKeys(categoryDateMonthStats),
   };
 
   const stats: CategoryStats = {
