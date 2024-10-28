@@ -29,6 +29,7 @@ type GetCategoryResponse = {
   stats: CategoryStats;
   category: CategoryType;
   dateStats: CategoryPeriodDateStats;
+  totalDays: number;
 };
 
 type CategoryUpdateParams = Partial<{
@@ -56,6 +57,8 @@ async function get(req: Request, res: Response) {
 
     // Prepare the stats object
     let dateStats: CategoryDateStats = {};
+
+    let totalDays = 0;
 
     let periodDateStats: CategoryPeriodDateStats = {
       allTime: {},
@@ -110,6 +113,9 @@ async function get(req: Request, res: Response) {
           calculateCategoryStats(dateStats);
         stats = statsResult;
         periodDateStats = dateStatsResult;
+
+        // Calculate the total number of days
+        totalDays = days.length;
       }
     } catch (err: unknown) {
       // Log error but continue returning an empty stats object
@@ -125,6 +131,7 @@ async function get(req: Request, res: Response) {
       stats,
       dateStats: periodDateStats,
       category,
+      totalDays,
     };
 
     return sendValidResponse<GetCategoryResponse>(

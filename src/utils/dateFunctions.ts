@@ -42,3 +42,18 @@ export function formatDate(
 
   return new Intl.DateTimeFormat("en-US", options).format(date);
 }
+
+export function sortObjectByDateKeys(obj: { [key: string]: any }) {
+  const sortedKeys = Object.keys(obj).sort((a, b) => {
+    const dateA = new Date(`${a}T00:00:00`);
+    const dateB = new Date(`${b}T00:00:00`);
+    return dateA.getTime() - dateB.getTime();
+  });
+
+  const sortedObj: { [key: string]: any } = {};
+  for (const key of sortedKeys) {
+    sortedObj[key] = obj[key];
+  }
+
+  return sortedObj;
+}
