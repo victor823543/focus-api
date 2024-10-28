@@ -12,7 +12,7 @@ import {
 import { ErrorCode, SuccessCode } from "../utils/constants.js";
 import { ErrorResponse, sendValidResponse } from "../utils/sendResponse.js";
 
-type CategoryType = Politus<ICategory>;
+export type CategoryType = Politus<ICategory>;
 
 export type CreateCategoryParams = {
   session: string;
@@ -36,7 +36,7 @@ type CategoryUpdateParams = Partial<{
   description: string;
 }>;
 
-type CategoryDateStats = Record<
+export type CategoryDateStats = Record<
   string,
   { score: number; calculatedScore: number }
 >;

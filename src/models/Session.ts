@@ -1,4 +1,5 @@
 import { model, Schema, Types } from "mongoose";
+import { toYMD } from "../utils/dateFunctions.js";
 
 export type ISession = {
   _id: Types.ObjectId;
@@ -8,8 +9,8 @@ export type ISession = {
   data: Array<Types.ObjectId>;
   activeDays: Array<number>;
   maxScore: number;
-  start: Date;
-  end: Date | null;
+  start: string;
+  end: string | null;
   timestamp: number;
 };
 
@@ -47,23 +48,23 @@ const schema = new Schema<ISession>({
     default: [0, 1, 2, 3, 4],
   },
   start: {
-    type: Date,
+    type: String,
     required: true,
-    default: Date.now,
+    default: () => toYMD(Date.now()),
   },
   end: {
-    type: Date,
+    type: String,
     required: false,
     default: null,
   },
 });
 
-schema.pre<ISession>("save", function (next) {
-  if (this.start) {
-    // Set the date to midnight (00:00:00) to remove time information
-    this.start.setHours(0, 0, 0, 0);
-  }
-  next();
-});
+// schema.pre<ISession>("save", function (next) {
+//   if (this.start) {
+//     // Set the date to midnight (00:00:00) to remove time information
+//     this.start.setHours(0, 0, 0, 0);
+//   }
+//   next();
+// });
 
 export const Session = model<ISession>("Session", schema);
