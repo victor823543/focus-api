@@ -112,7 +112,7 @@ async function list(req: Request, res: Response) {
 
   // Convert the result to an object where the key is the date and the value is the day item
   const days = result.reduce<Record<string, DayType>>((acc, day) => {
-    acc[day.date.toString()] = {
+    acc[day.date] = {
       ...day,
       id: day._id.toString(),
       categories: changeIdFromCategories(day.categories),
@@ -137,7 +137,7 @@ async function all(req: Request, res: Response) {
 
   // Convert the result to an object where the key is the date and the value is the day item
   const days = result.reduce<Record<string, DayType>>((acc, day) => {
-    acc[day.date.toISOString()] = {
+    acc[day.date] = {
       ...day,
       id: day._id.toString(),
       categories: changeIdFromCategories(day.categories),

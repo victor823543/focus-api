@@ -1,4 +1,5 @@
 import { Schema, Types, model } from "mongoose";
+import { toYMD } from "../utils/dateFunctions.js";
 
 export type CategoryScore = {
   category: Types.ObjectId;
@@ -19,7 +20,7 @@ export type IDay = {
   _id: Types.ObjectId;
   user: Types.ObjectId;
   session: Types.ObjectId;
-  date: Date;
+  date: string;
   categories: Array<Types.ObjectId>;
   score: Array<CategoryScore>;
   totalScore: number;
@@ -40,9 +41,9 @@ const DaySchema = new Schema<IDay>({
     required: true,
   },
   date: {
-    type: Date,
+    type: String,
     required: true,
-    default: Date.now,
+    default: () => toYMD(Date.now()),
   },
   categories: {
     type: [Schema.Types.ObjectId],
