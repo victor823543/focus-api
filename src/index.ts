@@ -14,6 +14,7 @@ import "./models/User.js";
 import authRoutes from "./routes/auth.js";
 import categoryRoutes from "./routes/categories.js";
 import colorRoutes from "./routes/colors.js";
+import dashboardRoutes from "./routes/dashboard.js";
 import dayRoutes from "./routes/days.js";
 import sessionRoutes from "./routes/sessions.js";
 import statsRoutes from "./routes/stats.js";
@@ -35,6 +36,7 @@ server.use("/api/days", dayRoutes);
 server.use("/api/auth", authRoutes);
 server.use("/api/test", testRoutes);
 server.use("/api/stats", statsRoutes);
+server.use("/api/dashboard", dashboardRoutes);
 
 server.use(errorHandler);
 
