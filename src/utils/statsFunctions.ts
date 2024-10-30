@@ -13,6 +13,7 @@ import {
 } from "../controllers/statsController.js";
 import { CategoryScore } from "../models/Day.js";
 import { formatDate, toYMD } from "./dateFunctions.js";
+import { to1Dec } from "./functions.js";
 
 export const getCategoryDateObject = (
   category: CategoryType,
@@ -131,6 +132,7 @@ export const getDayComparisonInfo = (
 export const getDayTrendChartData = (
   days: DayR[],
   dates: Date[],
+  latestName: string = "This Day",
 ): DayTrendChartData => {
   const data: DayTrendChartData = [
     {
@@ -139,8 +141,8 @@ export const getDayTrendChartData = (
         const day = days.find((d) => toYMD(d.date) === toYMD(date));
         return {
           x:
-            index === dates.length - 1 ? "This Day" : formatDate(date, "clean"),
-          y: day ? day.totalScore : 0,
+            index === dates.length - 1 ? latestName : formatDate(date, "clean"),
+          y: day ? to1Dec(day.totalScore) : 0,
         };
       }),
     },
