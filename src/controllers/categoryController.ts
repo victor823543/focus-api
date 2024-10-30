@@ -12,7 +12,7 @@ import {
 import { ErrorCode, SuccessCode } from "../utils/constants.js";
 import { ErrorResponse, sendValidResponse } from "../utils/sendResponse.js";
 
-type CategoryType = Politus<ICategory>;
+export type CategoryType = Politus<ICategory>;
 
 export type CreateCategoryParams = {
   session: string;
@@ -29,11 +29,15 @@ type GetCategoryResponse = {
   stats: CategoryStats;
   category: CategoryType;
   dateStats: CategoryPeriodDateStats;
+  totalDays: number;
 };
 
-type CategoryUpdateParams = Partial<CreateCategoryParams>;
+type CategoryUpdateParams = Partial<{
+  color: { name: string; main: string; light: string; dark: string };
+  description: string;
+}>;
 
-type CategoryDateStats = Record<
+export type CategoryDateStats = Record<
   string,
   { score: number; calculatedScore: number }
 >;
@@ -53,6 +57,8 @@ async function get(req: Request, res: Response) {
 
     // Prepare the stats object
     let dateStats: CategoryDateStats = {};
+
+    let totalDays = 0;
 
     let periodDateStats: CategoryPeriodDateStats = {
       allTime: {},
@@ -107,6 +113,9 @@ async function get(req: Request, res: Response) {
           calculateCategoryStats(dateStats);
         stats = statsResult;
         periodDateStats = dateStatsResult;
+
+        // Calculate the total number of days
+        totalDays = days.length;
       }
     } catch (err: unknown) {
       // Log error but continue returning an empty stats object
@@ -122,6 +131,7 @@ async function get(req: Request, res: Response) {
       stats,
       dateStats: periodDateStats,
       category,
+      totalDays,
     };
 
     return sendValidResponse<GetCategoryResponse>(
@@ -252,6 +262,18 @@ async function update(req: Request, res: Response) {
     );
   }
 
+  const updatedValues: Partial<ICategory> = {};
+
+  if (params.color) updatedValues.color = params.color;
+  if (params.description) updatedValues.description = params.description;
+
+  if (Object.keys(updatedValues).length === 0) {
+    throw new ErrorResponse(
+      ErrorCode.BAD_REQUEST,
+      "No valid update values provided.",
+    );
+  }
+
   const findCategory: ICategory | null = await Category.findOne({
     _id: id,
     user: user._id,
@@ -262,7 +284,7 @@ async function update(req: Request, res: Response) {
   }
 
   try {
-    await Category.updateOne({ _id: id }, { $set: params });
+    await Category.updateOne({ _id: id }, { $set: updatedValues });
 
     return sendValidResponse(res, SuccessCode.NO_CONTENT);
   } catch (error) {

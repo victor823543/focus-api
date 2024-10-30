@@ -3,7 +3,7 @@ import { Types } from "mongoose";
 import { Category, ICategory } from "../models/Category.js";
 import { Day, IDay } from "../models/Day.js";
 import { ISession, Session } from "../models/Session.js";
-import { TokenPayload } from "../models/User";
+import { TokenPayload } from "../models/User.js";
 import { Politus } from "../types.js";
 import { ErrorCode, SuccessCode } from "../utils/constants.js";
 import { ErrorResponse, sendValidResponse } from "../utils/sendResponse.js";
@@ -62,8 +62,8 @@ async function list(req: Request, res: Response) {
       return {
         id: _id.toString(),
         title,
-        start: new Date(start).toISOString(),
-        end: end ? new Date(end).toISOString() : null,
+        start: start,
+        end: end,
         categories: changeIdFromCategories(categories),
         maxScore,
       };
@@ -152,8 +152,8 @@ async function create(req: Request, res: Response) {
   const response: CreateSessionResponse = {
     id: createdSession._id.toString(),
     title: createdSession.title,
-    start: new Date(createdSession.start).toISOString(),
-    end: createdSession.end ? new Date(createdSession.end).toISOString() : null,
+    start: createdSession.start,
+    end: createdSession.end,
     categories: changeIdFromCategories(createdSession.categories),
     maxScore: createdSession.maxScore,
   };
@@ -215,8 +215,8 @@ async function configure(req: Request, res: Response) {
   const response: CreateSessionResponse = {
     id: updatedSession._id.toString(),
     title: updatedSession.title,
-    start: new Date(updatedSession.start).toISOString(),
-    end: updatedSession.end ? new Date(updatedSession.end).toISOString() : null,
+    start: updatedSession.start,
+    end: updatedSession.end,
     categories: changeIdFromCategories(updatedSession.categories),
     maxScore: maxScore,
   };
@@ -316,8 +316,8 @@ async function update(req: Request, res: Response) {
     const session: UpdateSessionResponse = {
       id: result._id.toString(),
       title: result.title,
-      start: new Date(result.start).toISOString(),
-      end: result.end ? new Date(result.end).toISOString() : null,
+      start: result.start,
+      end: result.end,
       categories: changeIdFromCategories(result.categories),
       maxScore: maxScore,
     };

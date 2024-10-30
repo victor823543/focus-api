@@ -1,4 +1,5 @@
 import { isSameMonth, isSameWeek } from "date-fns";
+import { sortObjectByDateKeys } from "./dateFunctions.js";
 
 type CategoryDateStats = Record<
   string,
@@ -46,6 +47,7 @@ export const calculateCategoryStats = (
 
   let categoryDateWeekStats: CategoryDateStats = {};
   let categoryDateMonthStats: CategoryDateStats = {};
+  let categoryDateOverallStats: CategoryDateStats = {};
 
   const currentDate = new Date();
 
@@ -100,10 +102,108 @@ export const calculateCategoryStats = (
       countThisMonth > 0 ? totalCalculatedScoreThisMonth / countThisMonth : 0,
   };
 
+  //   Calculate overall stats
+  const statsLength = Object.keys(categoryDateStats).length;
+  const overallStatsSize =
+    statsLength < 10 ? "small" : statsLength < 70 ? "medium" : "large";
+
+  switch (overallStatsSize) {
+    case "small":
+      categoryDateOverallStats = categoryDateStats;
+      break;
+    case "medium":
+      const weeks: Record<
+        string,
+        { totalScore: number; totalCalculatedScore: number; count: number }
+      > = {};
+
+      Object.entries(categoryDateStats).forEach(
+        ([dateString, { score, calculatedScore }]) => {
+          const date = new Date(dateString);
+          const weekNumber = `Week ${Math.ceil(
+            (date.getTime() - new Date(date.getFullYear(), 0, 1).getTime()) /
+              (7 * 24 * 60 * 60 * 1000),
+          )}`;
+
+          if (!weeks[weekNumber]) {
+            weeks[weekNumber] = {
+              totalScore: 0,
+              totalCalculatedScore: 0,
+              count: 0,
+            };
+          }
+
+          weeks[weekNumber].totalScore += score;
+          weeks[weekNumber].totalCalculatedScore += calculatedScore;
+          weeks[weekNumber].count++;
+        },
+      );
+
+      categoryDateOverallStats = Object.fromEntries(
+        Object.entries(weeks)
+          .sort(([weekA], [weekB]) => {
+            const weekNumberA = parseInt(weekA.split(" ")[1], 10);
+            const weekNumberB = parseInt(weekB.split(" ")[1], 10);
+            return weekNumberA - weekNumberB;
+          })
+          .map(([week, { totalScore, totalCalculatedScore, count }]) => [
+            week,
+            {
+              score: totalScore / count,
+              calculatedScore: totalCalculatedScore / count,
+            },
+          ]),
+      );
+      break;
+    case "large":
+      const months: Record<
+        string,
+        { totalScore: number; totalCalculatedScore: number; count: number }
+      > = {};
+
+      Object.entries(categoryDateStats).forEach(
+        ([dateString, { score, calculatedScore }]) => {
+          const date = new Date(dateString);
+          const monthKey = date.toLocaleDateString("en-US", {
+            month: "short",
+            year: "2-digit",
+          });
+
+          if (!months[monthKey]) {
+            months[monthKey] = {
+              totalScore: 0,
+              totalCalculatedScore: 0,
+              count: 0,
+            };
+          }
+
+          months[monthKey].totalScore += score;
+          months[monthKey].totalCalculatedScore += calculatedScore;
+          months[monthKey].count++;
+        },
+      );
+
+      categoryDateOverallStats = Object.fromEntries(
+        Object.entries(months)
+          .sort(([monthA], [monthB]) => {
+            const dateA = new Date(monthA);
+            const dateB = new Date(monthB);
+            return dateA.getTime() - dateB.getTime();
+          })
+          .map(([month, { totalScore, totalCalculatedScore, count }]) => [
+            month,
+            {
+              score: totalScore / count,
+              calculatedScore: totalCalculatedScore / count,
+            },
+          ]),
+      );
+  }
+
   const dateStats: CategoryPeriodDateStats = {
-    allTime: categoryDateStats,
-    thisWeek: categoryDateWeekStats,
-    thisMonth: categoryDateMonthStats,
+    allTime: categoryDateOverallStats,
+    thisWeek: sortObjectByDateKeys(categoryDateWeekStats),
+    thisMonth: sortObjectByDateKeys(categoryDateMonthStats),
   };
 
   const stats: CategoryStats = {
