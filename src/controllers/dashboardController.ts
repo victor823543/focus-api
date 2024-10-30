@@ -20,6 +20,7 @@ type DashboardDataResponse = {
   weekCategoryData: WeekCategoryData;
   dayTrendChartData: DayTrendChartData;
   weekScoreLeft: WeekScoreLeft;
+  isFirstWeek: boolean;
 };
 
 export type CurrentWeekBarChartData = Array<{
@@ -126,6 +127,7 @@ async function getDashboardData(req: Request, res: Response) {
   const weekCategoryData = createWeekCategoryData(currentWeekDays);
   const weekImprovement = getWeekImprovement(currentWeekDays, previousWeekDays);
   const weekScoreLeft = getWeekScoreLeftObject(currentWeekDays, weeks);
+  const isFirstWeek = weeks.length === 0;
 
   const response: DashboardDataResponse = {
     currentWeekBarChartData,
@@ -133,6 +135,7 @@ async function getDashboardData(req: Request, res: Response) {
     weekCategoryData,
     dayTrendChartData,
     weekScoreLeft,
+    isFirstWeek,
   };
 
   return sendValidResponse<DashboardDataResponse>(res, 200, response);
