@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
+import { Category, ICategory } from "../models/Category.js";
 import { Day, IDay } from "../models/Day.js";
 import { TokenPayload } from "../models/User.js";
 import {
   convertDaysToWeeks,
   createCurrentWeekBarChartData,
+  createEmptyWeekCategoryData,
   createWeekCategoryData,
   getWeekImprovement,
   getWeekScoreLeftObject,
@@ -101,16 +103,12 @@ async function getDashboardData(req: Request, res: Response) {
     })
     .filter((day): day is DayR => day !== undefined);
 
-  const weeks = convertDaysToWeeks(days);
-
-  const previousWeekAllDays = days.filter((day) => {
-    const dayDate = new Date(day.date);
-    return dayDate >= startOfPreviousWeek && dayDate < startOfCurrentWeek;
-  });
-
-  const mostRecentDate = currentWeekDays.reduce((latest, day) => {
-    return day.date > latest ? day.date : latest;
-  }, new Date(0));
+  const mostRecentDate =
+    currentWeekDays.length > 0
+      ? currentWeekDays.reduce((latest, day) => {
+          return day.date > latest ? day.date : latest;
+        }, new Date(0))
+      : new Date();
 
   const fiveLastDates: Date[] = [];
   for (let i = 0; i < 5; i++) {
@@ -118,6 +116,40 @@ async function getDashboardData(req: Request, res: Response) {
     newDate.setUTCDate(newDate.getUTCDate() - i);
     fiveLastDates.push(newDate);
   }
+
+  // If days array is empt, return response with empty data
+  if (days.length === 0) {
+    const categoryResult: Array<ICategory> = await Category.find({
+      user: user._id,
+      session: sessionId,
+    }).lean();
+
+    const response: DashboardDataResponse = {
+      currentWeekBarChartData: createCurrentWeekBarChartData([], []),
+      weekImprovement: 0,
+      weekCategoryData: createEmptyWeekCategoryData(categoryResult),
+      dayTrendChartData: getDayTrendChartData([], fiveLastDates, "Latest"),
+      weekScoreLeft: {
+        recordScore: 0,
+        toRecord: 0,
+        toRecordPercentage: 0,
+        avgScoreToRecord: 0,
+        averageScore: 0,
+        toAverage: 0,
+        toAveragePercentage: 0,
+        avgScoreToAverage: 0,
+      },
+      isFirstWeek: true,
+    };
+    return sendValidResponse<DashboardDataResponse>(res, 200, response);
+  }
+
+  const weeks = convertDaysToWeeks(days);
+
+  const previousWeekAllDays = days.filter((day) => {
+    const dayDate = new Date(day.date);
+    return dayDate >= startOfPreviousWeek && dayDate < startOfCurrentWeek;
+  });
 
   const currentWeekBarChartData = createCurrentWeekBarChartData(
     currentWeekDays,

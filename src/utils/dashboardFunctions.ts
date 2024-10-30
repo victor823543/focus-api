@@ -4,6 +4,7 @@ import {
   WeekScoreLeft,
 } from "../controllers/dashboardController.js";
 import { DayR } from "../controllers/statsController.js";
+import { ICategory } from "../models/Category.js";
 import { to1Dec } from "./functions.js";
 
 export function createCurrentWeekBarChartData(
@@ -49,6 +50,26 @@ export function createWeekCategoryData(days: DayR[]): WeekCategoryData {
       weekCategoryData[id].totalScore += categoryScore.calculatedScore;
       weekCategoryData[id].maxScore += categoryScore.importance * 10;
     });
+  });
+
+  return weekCategoryData;
+}
+
+export function createEmptyWeekCategoryData(
+  categories: ICategory[],
+): WeekCategoryData {
+  const weekCategoryData: WeekCategoryData = {};
+
+  categories.forEach((category) => {
+    const id = category._id.toString();
+    if (!weekCategoryData[id]) {
+      weekCategoryData[id] = {
+        totalScore: 0,
+        maxScore: 0,
+      };
+    }
+
+    weekCategoryData[id].maxScore += category.importance * 10;
   });
 
   return weekCategoryData;
