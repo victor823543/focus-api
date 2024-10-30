@@ -37,9 +37,13 @@ export type WeekCategoryData = Record<
 >;
 
 export type WeekScoreLeft = {
+  recordScore: number;
   toRecord: number;
+  toRecordPercentage: number;
   avgScoreToRecord: number;
+  averageScore: number;
   toAverage: number;
+  toAveragePercentage: number;
   avgScoreToAverage: number;
 };
 
@@ -118,7 +122,7 @@ async function getDashboardData(req: Request, res: Response) {
     currentWeekDays,
     previousWeekAllDays,
   );
-  const dayTrendChartData = getDayTrendChartData(days, fiveLastDates);
+  const dayTrendChartData = getDayTrendChartData(days, fiveLastDates, "Latest");
   const weekCategoryData = createWeekCategoryData(currentWeekDays);
   const weekImprovement = getWeekImprovement(currentWeekDays, previousWeekDays);
   const weekScoreLeft = getWeekScoreLeftObject(currentWeekDays, weeks);

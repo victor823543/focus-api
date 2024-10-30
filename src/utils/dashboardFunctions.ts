@@ -4,6 +4,7 @@ import {
   WeekScoreLeft,
 } from "../controllers/dashboardController.js";
 import { DayR } from "../controllers/statsController.js";
+import { to1Dec } from "./functions.js";
 
 export function createCurrentWeekBarChartData(
   thisWeek: DayR[],
@@ -24,8 +25,8 @@ export function createCurrentWeekBarChartData(
 
     currentWeekBarChartData.push({
       weekday,
-      "Total Score": currentWeekDay ? currentWeekDay.totalScore : 0,
-      "Previous Week": previousWeekDay ? previousWeekDay.totalScore : 0,
+      "Total Score": currentWeekDay ? to1Dec(currentWeekDay.totalScore) : 0,
+      "Previous Week": previousWeekDay ? to1Dec(previousWeekDay.totalScore) : 0,
     });
   });
 
@@ -95,9 +96,16 @@ export function getWeekScoreLeftObject(
   const avgScoreToAverage = toAverage / thisWeekDaysLeft;
 
   return {
+    recordScore: recordWeekScore,
     toRecord,
+    toRecordPercentage: Math.min((thisWeekTotal / recordWeekScore) * 100, 100),
     avgScoreToRecord,
+    averageScore: averageWeekScore,
     toAverage,
+    toAveragePercentage: Math.min(
+      (thisWeekTotal / averageWeekScore) * 100,
+      100,
+    ),
     avgScoreToAverage,
   };
 }
