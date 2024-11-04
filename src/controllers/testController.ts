@@ -44,21 +44,28 @@ async function seed(req: Request, res: Response) {
   try {
     if (user) {
       const createdUser = await User.create(user);
-
+      console.log("userCategories: ", userCategories);
       if (userCategories && userCategories.length > 0) {
         const newUserCategories = userCategories.map((category) => ({
           ...category,
           user: createdUser._id,
         }));
+        console.log("newUserCategories: ", newUserCategories);
         const createdCategories = await Category.insertMany(newUserCategories);
         const categoryIds = createdCategories.map(
           (category: any) => category._id,
         );
-
+        console.log("categoryIds: ", categoryIds);
         if (session) {
           session.user = createdUser._id;
           session.categories = categoryIds;
           const createdSession = await Session.create(session);
+
+          // Add categories to session
+          await Category.updateMany(
+            { _id: { $in: categoryIds } },
+            { session: createdSession._id },
+          );
 
           if (days) {
             const newDays = days.map((day: any) => ({
