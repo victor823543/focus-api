@@ -67,10 +67,10 @@ export const getDayHorizontalBarChartData = (
       const avgScore = info.average.avgScore;
       return {
         category: info.name,
-        "This Day": thisDayScore,
-        Yesterday: yesterdayScore,
-        "Previous Week": prevWeekDayScore,
-        Average: avgScore,
+        "This Day": to1Dec(thisDayScore),
+        Yesterday: to1Dec(yesterdayScore),
+        "Previous Week": to1Dec(prevWeekDayScore),
+        Average: to1Dec(avgScore),
       };
     },
   );
@@ -90,7 +90,7 @@ export const getDayComparisonInfo = (
 
   if (!!day) {
     const index = sortedDays.findIndex((d) => d.id === day.id);
-    const topPercentage = (index / sortedDays.length) * 100;
+    const topPercentage = ((index + 1) / sortedDays.length) * 100;
 
     // Get shortage or surplus of the day compared to the average
     const avgScore =
